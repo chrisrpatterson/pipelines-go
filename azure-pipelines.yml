@@ -28,6 +28,7 @@ steps:
         curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
         dep ensure
     fi
+  displayName: "Install dep"
 
 - powershell: |
     go version
@@ -39,37 +40,38 @@ steps:
   workingDirectory: '$(modulePath)'
   displayName: 'Get dependencies'
   
-- script: |
+- powershell: |
     go test -v -coverprofile=coverage.txt -covermode count 2>&1 | go-junit-report > junit.xml
     gocov convert coverage.txt > coverage.json    
     gocov-xml < coverage.json > coverage.xml
     gocov-html < coverage.json > index.html
-    mkdir reports
-    copy junit.xml ./reports/junit.xml
-    copy coverage.xml ./reports/coverage.xml
-    copy index.html ./reports/index.html
-  continueOnError: 'true'
+    New-Item -Path reports -ItemType Directory
+    Move-Item -Path .\junit.xml -Destination .\reports\junit.xml
+    Move-Item -Path .\coverage.xml -Destination .\reports\coverage.xml
+    Move-Item -Path .\index.html -Destination .\reports\index.html
   workingDirectory: '$(modulePath)'
   displayName: 'Run unit tests'
   
 - script: |
     go build -v
   workingDirectory: '$(modulePath)'
-  continueOnError: 'true'
   displayName: 'Build app'
 
 - task: PublishTestResults@2
   inputs:
     testRunner: JUnit
     testResultsFiles: '$(modulePath)/reports/junit.xml'
+  condition: always()
 
 - task: PublishCodeCoverageResults@1
   inputs:
     codeCoverageTool: 'cobertura'
     summaryFileLocation: '$(modulePath)/reports/coverage.xml'
     reportDirectory: '$(modulePath)/reports/'
+  condition: always()
 
 - task: PublishPipelineArtifact@0
   inputs:
     artifactName: 'Test Reports'
     targetPath: '$(modulePath)/reports/'
+  condition: always()
