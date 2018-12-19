@@ -16,7 +16,7 @@ steps:
     New-Item -Path $env:GOBIN -ItemType Directory -Force
     New-Item -Path $env:GOPATH/pkg -ItemType Directory -Force
     New-Item -Path $env:modulePath -ItemType Directory -Force
-    robocopty $env:GOPATH $env:modulePath /e /move /xd $env:GOBIN $env:modulePath
+    robocopy $env:GOPATH $env:modulePath /e /move /xd $env:GOBIN $env:modulePath
     Write-Host "##vso[task.prependpath]$env:GOBIN"
     Write-Host "##vso[task.prependpath]$env:GOROOT)/bin"
   displayName: 'Set up the Go workspace'
