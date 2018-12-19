@@ -4,32 +4,32 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/go
 
 pool:
-  vmImage: 'Ubuntu 16.04'
+  vmImage: 'vs2017-win2016'
 
 variables:
   GOBIN:  '$(GOPATH)/bin' # Go binaries path
-  GOROOT: '/usr/local/go1.11' # Go installation path
-  GOPATH: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
+  GOPATH: '$(system.defaultWorkingDirectory)' # Go workspace path
   modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
 
 steps:
-- script: |
-    mkdir -p '$(GOBIN)'
-    mkdir -p '$(GOPATH)/pkg'
-    mkdir -p '$(modulePath)'
-    shopt -s extglob
-    mv !(gopath) '$(modulePath)'
-    echo '##vso[task.prependpath]$(GOBIN)'
-    echo '##vso[task.prependpath]$(GOROOT)/bin'
+- powershell: |
+    New-Item -Path '$env:GOBIN' -ItemType Directory -Force
+    New-Item -Path '$env:GOPATH/pkg' -ItemType Directory -Force
+    New-Item -Path '$env:modulePath'
+    Move-Item -Path '$env:GOPATH' -Destination '$env:modulePath' -Exclude '{"$env:GOBIN", "$env:modulePath"}' -Force
+    Write-Host '##vso[task.prependpath]$(GOBIN)'
+    Write-Host '##vso[task.prependpath]$(GOROOT)/bin'
   displayName: 'Set up the Go workspace'
 
-- script: |
-    go version
-    go get -v -t -d ./...
+- bash: |
     if [ -f Gopkg.toml ]; then
         curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
         dep ensure
     fi
+
+- powershell: |
+    go version
+    go get -v -t -d ./...
     go get github.com/jstemmer/go-junit-report
     go get github.com/axw/gocov/gocov
     go get github.com/AlekSi/gocov-xml
@@ -43,9 +43,9 @@ steps:
     gocov-xml < coverage.json > coverage.xml
     gocov-html < coverage.json > index.html
     mkdir reports
-    cp junit.xml ./reports/junit.xml
-    cp coverage.xml ./reports/coverage.xml
-    cp index.html ./reports/index.html
+    copy junit.xml ./reports/junit.xml
+    copy coverage.xml ./reports/coverage.xml
+    copy index.html ./reports/index.html
   continueOnError: 'true'
   workingDirectory: '$(modulePath)'
   displayName: 'Run unit tests'
