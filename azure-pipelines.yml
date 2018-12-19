@@ -13,10 +13,10 @@ variables:
 
 steps:
 - powershell: |
+    New-Item -Path $env:modulePath -ItemType Directory -Force
+    Get-ChildItem -Exclude $env:GOPATH -Force | Move-Item -Destination $env:modulePath
     New-Item -Path $env:GOBIN -ItemType Directory -Force
     New-Item -Path $env:GOPATH/pkg -ItemType Directory -Force
-    New-Item -Path $env:modulePath -ItemType Directory -Force
-    Get-ChildItem -Exclude @($env:GOBIN, $env:modulePath) -Force | Move-Item -Destination $env:modulePath
     Write-Host "##vso[task.prependpath]$env:GOBIN"
     Write-Host "##vso[task.prependpath]$env:GOROOT)/bin"
   displayName: 'Set up the Go workspace'
