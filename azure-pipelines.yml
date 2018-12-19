@@ -20,7 +20,7 @@ steps:
     New-Item -Path $env:GOBIN -ItemType Directory -Force
     New-Item -Path $env:GOPATH/pkg -ItemType Directory -Force
     Write-Host "##vso[task.prependpath]$env:GOBIN"
-    Write-Host "##vso[task.prependpath]$env:GOROOT)/bin"
+    Write-Host "##vso[task.prependpath]$env:GOROOT/bin"
   displayName: 'Set up the Go workspace'
 
 - bash: |
@@ -30,7 +30,7 @@ steps:
     fi
   displayName: "Install dep"
 
-- powershell: |
+- script: |
     go version
     go get -v -t -d ./...
     go get github.com/jstemmer/go-junit-report
@@ -40,20 +40,20 @@ steps:
   workingDirectory: '$(modulePath)'
   displayName: 'Get dependencies'
   
-- powershell: |
-    go test -v -coverprofile=coverage.txt -covermode count 2>&1 | go-junit-report > junit.xml
+- script: |
+    go test -v -coverprofile=coverage.txt -covermode count | go-junit-report > junit.xml
     gocov convert coverage.txt > coverage.json    
-    Get-Content -Path coverage.json | gocov-xml > coverage.xml
-    Get-Content -Path coverage.json | gocov-html > index.html
-    New-Item -Path reports -ItemType Directory
-    Move-Item -Path .\junit.xml -Destination .\reports\junit.xml
-    Move-Item -Path .\coverage.xml -Destination .\reports\coverage.xml
-    Move-Item -Path .\index.html -Destination .\reports\index.html
+    type coverage.json | gocov-xml > coverage.xml
+    type coverage.json | gocov-html > index.html
+    mkdir reports
+    move .\junit.xml .\reports\junit.xml
+    move .\coverage.xml .\reports\coverage.xml
+    move .\index.html .\reports\index.html
   workingDirectory: '$(modulePath)'
   displayName: 'Run unit tests'
   
 - script: |
-    go build -v
+    go build -v -o $(Build.ArtifactStagingDirectory)\pipeline-go.exe
   workingDirectory: '$(modulePath)'
   displayName: 'Build app'
 
@@ -72,6 +72,5 @@ steps:
 
 - task: PublishPipelineArtifact@0
   inputs:
-    artifactName: 'Test Reports'
-    targetPath: '$(modulePath)/reports/'
-  condition: always()
+    artifactName: 'App'
+    targetPath: $(Build.ArtifactStagingDirectory)
