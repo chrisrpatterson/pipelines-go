@@ -10,8 +10,8 @@ pool:
 
 variables:
   GOBIN:  '$(GOPATH)/bin' # Go binaries path
-  GOPATH: '$(system.defaultWorkingDirectory)/go' # Go workspace path
-  modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
+  GOPATH: '$(system.defaultWorkingDirectory)' # Go workspace path
+  modulePath: 'src/github.com/$(build.repository.name)' # Path to the module's code
 
 steps:
 - checkout: self
