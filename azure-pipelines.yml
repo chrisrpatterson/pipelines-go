@@ -58,14 +58,14 @@ steps:
 - task: PublishTestResults@2
   inputs:
     testRunner: JUnit
-    testResultsFiles: '$(modulePath)/reports/junit.xml'
+    testResultsFiles: '**/reports/junit.xml'
   condition: always()
 
 - task: PublishCodeCoverageResults@1
   inputs:
     codeCoverageTool: 'cobertura'
-    summaryFileLocation: '$(modulePath)/reports/coverage.xml'
-    reportDirectory: '$(modulePath)/reports/'
+    summaryFileLocation: '**/reports/coverage.xml'
+    reportDirectory: '**/reports/'
   condition: always()
 
 - task: PublishPipelineArtifact@0
