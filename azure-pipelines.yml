@@ -42,12 +42,10 @@ steps:
     move .\junit.xml .\reports\junit.xml
     move .\coverage.xml .\reports\coverage.xml
     move .\index.html .\reports\index.html
-  workingDirectory: '$(modulePath)'
   displayName: 'Run unit tests'
   
 - script: |
-    go build -v -o $(Build.ArtifactStagingDirectory)\pipeline-go.exe
-  workingDirectory: '$(modulePath)'
+    go build -v -o $(GOBIN)\pipeline-go.exe
   displayName: 'Build app'
 
 - task: PublishTestResults@2
@@ -66,4 +64,4 @@ steps:
 - task: PublishPipelineArtifact@0
   inputs:
     artifactName: 'App'
-    targetPath: $(Build.ArtifactStagingDirectory)
+    targetPath: $(GOBIN)
